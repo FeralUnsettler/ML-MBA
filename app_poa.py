@@ -10,9 +10,10 @@ import plotly.express as px
 
 st.set_page_config(page_title="Predição Aluguéis POA", layout="wide")
 
+# Imagem substituída pela opção 3 (Unsplash – sempre funciona)
 st.image(
-    "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Sunset_at_Guaiba_Lake.jpg/800px-Sunset_at_Guaiba_Lake.jpg",
-    height=200
+    "https://images.unsplash.com/photo-1501612780327-45045538702b",
+    use_column_width=True
 )
 
 st.title("🏡 Predição de Aluguéis em Porto Alegre/RS")
@@ -31,7 +32,6 @@ def load_data():
     np.random.seed(42)
     n_samples = 500
 
-    # Fatores de valorização
     bairros_data = {
         'Restinga': {'fator': 0.6, 'base': 20},
         'Sarandi': {'fator': 0.8, 'base': 28},
@@ -61,10 +61,10 @@ def load_data():
         else:
             quartos = 4
 
-        # Ruído aleatório
+        # Ruído
         ruido = np.random.normal(0, 300)
 
-        # Fórmula simulada do preço
+        # Preço
         preco_base = (area * info['base']) + (quartos * 150) + ruido
         preco_final = max(400, round(preco_base, 2))
 
@@ -91,12 +91,13 @@ model.fit(X, y)
 # -------------------------------------------
 
 st.sidebar.header("Parâmetros do Imóvel")
+
 bairro_input = st.sidebar.selectbox("Bairro", df['Bairro'].unique())
 area_input = st.sidebar.slider("Área (m²)", 20, 250, 60)
 quartos_input = st.sidebar.slider("Número de Quartos", 1, 5, 2)
 
 # -------------------------------------------
-# 4. CRIAÇÃO DO DADO DE ENTRADA
+# 4. DADO DE ENTRADA
 # -------------------------------------------
 
 input_data = pd.DataFrame({
@@ -107,14 +108,13 @@ input_data = pd.DataFrame({
 
 input_dummies = pd.get_dummies(input_data, columns=['Bairro'])
 
-# Garantir colunas idênticas ao treinamento
+# Garantir colunas idênticas
 for col in X.columns:
     if col not in input_dummies.columns:
         input_dummies[col] = 0
 
 input_dummies = input_dummies[X.columns]
 
-# Predição
 prediction = model.predict(input_dummies)[0]
 
 # -------------------------------------------
@@ -128,7 +128,7 @@ with col1:
     st.metric("Aluguel Mensal", f"R$ {prediction:,.2f}")
 
     st.info(f"""
-**Análise do Modelo:**
+**Análise do Modelo:**  
 Imóveis no **{bairro_input}** possuem um padrão próprio de valorização.
 A cada m² adicional, o preço tende a aumentar de forma proporcional ao valor médio do bairro.
 """)
@@ -138,9 +138,9 @@ with col2:
 
     fig = px.scatter(
         df,
-        x='Area_m2',
-        y='Preco_Aluguel',
-        color='Bairro',
+        x="Area_m2",
+        y="Preco_Aluguel",
+        color="Bairro",
         opacity=0.6,
         title="Relação Área x Preço por Bairro (Dados Históricos)"
     )
@@ -156,7 +156,7 @@ with col2:
     st.plotly_chart(fig, use_container_width=True)
 
 # -------------------------------------------
-# 6. VISUALIZAÇÃO DE DADOS
+# 6. VISUALIZAÇÃO
 # -------------------------------------------
 
 st.divider()
